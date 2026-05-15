@@ -30,10 +30,15 @@ pipeline {
 
             steps {
 
-                sshagent(credentials: ['ec2-key1']) {
+                withCredentials([
+                    sshUserPrivateKey(
+                        credentialsId: 'ec2-user1',
+                        keyFileVariable: 'SSH_KEY'
+                    )
+                ]) {
 
                     bat """
-                    ssh -o StrictHostKeyChecking=no ec2-user@%EC2_HOST% ^
+                    ssh -o StrictHostKeyChecking=no -i "%SSH_KEY%" ec2-user@%EC2_HOST% ^
                     "docker stop attendance-app || true && ^
                     docker rm attendance-app || true && ^
                     docker pull %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%IMAGE_NAME%:%BUILD_NUMBER% && ^
