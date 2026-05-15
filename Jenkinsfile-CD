@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     parameters {
-
         choice(
             name: 'ENVIRONMENT',
             choices: ['Staging', 'Production'],
@@ -11,38 +10,41 @@ pipeline {
 
         string(
             name: 'BUILD_NUMBER',
-            defaultValue: '9',
+            defaultValue: '11',
             description: 'Enter Docker image build number'
         )
     }
 
     environment {
-
         AWS_ACCOUNT_ID = '639642129219'
         AWS_REGION = 'ap-south-1'
         IMAGE_NAME = 'attendance-management-system'
-        EC2_HOST = '52.66.202.182'
+        EC2_IP = '52.66.202.182'
     }
 
     stages {
 
         stage('Deploy to EC2') {
-
             steps {
 
                 withCredentials([
                     sshUserPrivateKey(
                         credentialsId: 'ec2-user1',
-                        keyFileVariable: 'SSH_KEY'
+                        keyFileVariable: 'SSH_KEY',
+                        usernameVariable: 'SSH_USER'
                     )
                 ]) {
 
                     bat """
-                    ssh -o StrictHostKeyChecking=no -i "%SSH_KEY%" ec2-user@%EC2_HOST% ^
+                    icacls "%SSH_KEY%" /inheritance:r
+                    icacls "%SSH_KEY%" /grant:r "%USERNAME%:R"
+
+                    ssh -o StrictHostKeyChecking=no -i "%SSH_KEY%" %SSH_USER%@%EC2_IP% ^
                     "docker stop attendance-app || true && ^
                     docker rm attendance-app || true && ^
-                    docker pull %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%IMAGE_NAME%:%BUILD_NUMBER% && ^
-                    docker run -d -p 9090:9090 --name attendance-app %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%IMAGE_NAME%:%BUILD_NUMBER%"
+                    docker pull %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%IMAGE_NAME%:${BUILD_NUMBER} && ^
+                    docker run -d -p 9090:9090 --name attendance-app ^
+                    %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%IMAGE_NAME%:${BUILD_NUMBER}"
                     """
                 }
             }
@@ -52,12 +54,10 @@ pipeline {
     post {
 
         success {
-
             echo 'Deployment successful!'
         }
 
         failure {
-
             echo 'Deployment failed!'
         }
     }
