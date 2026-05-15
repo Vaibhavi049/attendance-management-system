@@ -36,15 +36,7 @@ pipeline {
                 ]) {
 
                     bat """
-                    icacls "%SSH_KEY%" /inheritance:r
-                    icacls "%SSH_KEY%" /grant:r "%USERNAME%:R"
-
-                    ssh -o StrictHostKeyChecking=no -i "%SSH_KEY%" %SSH_USER%@%EC2_IP% ^
-                    "docker stop attendance-app || true && ^
-                    docker rm attendance-app || true && ^
-                    docker pull %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%IMAGE_NAME%:${BUILD_NUMBER} && ^
-                    docker run -d -p 9090:9090 --name attendance-app ^
-                    %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%IMAGE_NAME%:${BUILD_NUMBER}"
+                    ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i "%SSH_KEY%" %SSH_USER%@%EC2_IP% "docker stop attendance-app || true && docker rm attendance-app || true && docker pull %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%IMAGE_NAME%:${BUILD_NUMBER} && docker run -d -p 9090:9090 --name attendance-app %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%IMAGE_NAME%:${BUILD_NUMBER}"
                     """
                 }
             }
