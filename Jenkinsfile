@@ -64,13 +64,46 @@ pipeline {
         }
     }
 
+
+    stage('Trigger CD Pipeline') {
+        steps {
+            build job: 'attendance-management-cd',
+            parameters: [
+                string(name: 'BUILD_NUMBER', value: "${BUILD_NUMBER}"),
+                string(name: 'ENVIRONMENT', value: "Staging")
+            ]
+        }
+    }
+    
     post {
         success {
-            echo 'Pipeline executed successfully!'
+            emailext(
+                subject: "CI Pipeline Success - Build #${BUILD_NUMBER}",
+                body: """
+                    Build Successful!
+
+                    Job Name: ${JOB_NAME}
+                    Build Number: ${BUILD_NUMBER}
+
+                    Docker Image pushed to ECR successfully.
+                """,
+                to: "yourgmailid2@gmail.com"
+            )
         }
 
         failure {
-            echo 'Pipeline failed!'
+            emailext(
+                subject: "CI Pipeline Failed - Build #${BUILD_NUMBER}",
+                body: """
+                    Build Failed!
+
+                    Job Name: ${JOB_NAME}
+                    Build Number: ${BUILD_NUMBER}
+
+                    Check Jenkins console logs for details.
+                """,
+                to: "yourgmailid2@gmail.com"
+            )
         }
     }
 }
