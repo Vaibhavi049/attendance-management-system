@@ -63,49 +63,65 @@ pipeline {
             }
         }
 
-         stage('Trigger CD Pipeline') {
-                steps {
-                    build job: 'attendance-management-cd',
-                    parameters: [
-                        string(name: 'BUILD_NUMBER', value: "${BUILD_NUMBER}"),
-                        string(name: 'ENVIRONMENT', value: "Staging")
-                    ]
-                }
+        stage('Trigger CD Pipeline') {
+            steps {
+                build job: 'attendance-management-cd',
+                parameters: [
+                    string(name: 'BUILD_NUMBER', value: "${BUILD_NUMBER}"),
+                    string(name: 'ENVIRONMENT', value: "Staging")
+                ]
             }
+        }
     }
 
-
-
-
     post {
+
         success {
             emailext(
-                subject: "CI Pipeline Success - Build #${BUILD_NUMBER}",
+                to: 'vaibhaviagrawal24@gmail.com',
+                from: 'vaibhaviagrawal24@gmail.com',
+                replyTo: 'vaibhaviagrawal24@gmail.com',
+                subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
-                    Build Successful!
+CI Pipeline Build Successful
 
-                    Job Name: ${JOB_NAME}
-                    Build Number: ${BUILD_NUMBER}
+Job Name: ${env.JOB_NAME}
+Build Number: ${env.BUILD_NUMBER}
+Build Status: SUCCESS
 
-                    Docker Image pushed to ECR successfully.
-                """,
-                to: "vaibhaviagrawal24@gmail.com"
+Docker image pushed successfully to AWS ECR.
+
+Build URL:
+${env.BUILD_URL}
+""",
+                mimeType: 'text/plain'
             )
         }
 
         failure {
             emailext(
-                subject: "CI Pipeline Failed - Build #${BUILD_NUMBER}",
+                to: 'vaibhaviagrawal24@gmail.com',
+                from: 'vaibhaviagrawal24@gmail.com',
+                replyTo: 'vaibhaviagrawal24@gmail.com',
+                subject: "FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
-                    Build Failed!
+CI Pipeline Build Failed
 
-                    Job Name: ${JOB_NAME}
-                    Build Number: ${BUILD_NUMBER}
+Job Name: ${env.JOB_NAME}
+Build Number: ${env.BUILD_NUMBER}
+Build Status: FAILURE
 
-                    Check Jenkins console logs for details.
-                """,
-                to: "vaibhaviagrawal24@gmail.com"
+Check Jenkins console output for details.
+
+Build URL:
+${env.BUILD_URL}
+""",
+                mimeType: 'text/plain'
             )
+        }
+
+        always {
+            echo 'Pipeline execution completed.'
         }
     }
 }
