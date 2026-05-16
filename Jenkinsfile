@@ -62,19 +62,21 @@ pipeline {
                 """
             }
         }
+
+         stage('Trigger CD Pipeline') {
+                steps {
+                    build job: 'attendance-management-cd',
+                    parameters: [
+                        string(name: 'BUILD_NUMBER', value: "${BUILD_NUMBER}"),
+                        string(name: 'ENVIRONMENT', value: "Staging")
+                    ]
+                }
+            }
     }
 
 
-    stage('Trigger CD Pipeline') {
-        steps {
-            build job: 'attendance-management-cd',
-            parameters: [
-                string(name: 'BUILD_NUMBER', value: "${BUILD_NUMBER}"),
-                string(name: 'ENVIRONMENT', value: "Staging")
-            ]
-        }
-    }
-    
+
+
     post {
         success {
             emailext(
