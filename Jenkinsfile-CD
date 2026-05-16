@@ -55,13 +55,34 @@ pipeline {
     }
 
     post {
-
         success {
-            echo 'Deployment successful!'
+            emailext(
+                subject: "CD Deployment Successful - Build #${BUILD_NUMBER}",
+                body: """
+                    Deployment Successful!
+
+                    Job Name: ${JOB_NAME}
+                    Build Number: ${BUILD_NUMBER}
+
+                    Application deployed successfully on EC2.
+                """,
+                to: "vaibhaviagrawal24@gmail.com"
+            )
         }
 
         failure {
-            echo 'Deployment failed!'
+            emailext(
+                subject: "CD Deployment Failed - Build #${BUILD_NUMBER}",
+                body: """
+                    Deployment Failed!
+
+                    Job Name: ${JOB_NAME}
+                    Build Number: ${BUILD_NUMBER}
+
+                    Check Jenkins console logs for details.
+                """,
+                to: "vaibhaviagrawal24@gmail.com"
+            )
         }
     }
 }

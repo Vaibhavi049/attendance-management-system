@@ -89,7 +89,7 @@ pipeline {
 
                     Docker Image pushed to ECR successfully.
                 """,
-                to: "yourgmailid2@gmail.com"
+                to: "vaibhaviagrawal24@gmail.com"
             )
         }
 
@@ -104,7 +104,7 @@ pipeline {
 
                     Check Jenkins console logs for details.
                 """,
-                to: "yourgmailid2@gmail.com"
+                to: "vaibhaviagrawal24@gmail.com"
             )
         }
     }
